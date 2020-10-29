@@ -1,1 +1,149 @@
-[]
+[
+    {
+        "id": "4b488676.c28178",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "45199293.60ea6c",
+        "type": "file",
+        "z": "4b488676.c28178",
+        "name": "Create js",
+        "filename": "",
+        "appendNewline": true,
+        "createDir": true,
+        "overwriteFile": "true",
+        "encoding": "utf8",
+        "x": 580,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c7e674f8.e916d8",
+        "type": "inject",
+        "z": "4b488676.c28178",
+        "name": "Node Description",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "xx",
+        "payloadType": "str",
+        "x": 180,
+        "y": 420,
+        "wires": [
+            [
+                "a69b01ec.9bf0d"
+            ]
+        ]
+    },
+    {
+        "id": "a69b01ec.9bf0d",
+        "type": "node-generator",
+        "z": "4b488676.c28178",
+        "name": "node-name",
+        "desc": "node-description",
+        "properties": "one,two,three,four,five",
+        "codeBeforeReceivePayload": "var b = 5;",
+        "codeWhenReceivePayload": "msg.payload = b+this.name;",
+        "x": 390,
+        "y": 420,
+        "wires": [
+            [
+                "5e4a20c6.6d6eb"
+            ]
+        ]
+    },
+    {
+        "id": "98cec8db.866368",
+        "type": "function",
+        "z": "4b488676.c28178",
+        "name": "js file",
+        "func": "\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 590,
+        "y": 420,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "5e4a20c6.6d6eb",
+        "type": "function",
+        "z": "4b488676.c28178",
+        "name": "html file",
+        "func": "var newPayload = \n`<script type=\"text/javascript\">\n    RED.nodes.registerType('${msg.payload.name}',{\n        category: 'function',\n        color: '#a6bbcf',\n        defaults: {`;\n        \n//loop of config variables\nfor(var i = 0; i< msg.payload.properties.length; i++){\nnewPayload +=       \n`            ${msg.payload.properties[i]}: {value:\"\"},\n`;\n}\nnewPayload = newPayload.slice(0, -2);\nnewPayload +=\n`\n},\n        inputs:1,\n        outputs:1,\n        icon: \"file.png\",\n        label: function() {\n            return \"${msg.payload.name}\";\n        }\n    });\n</script>\n\n<script type=\"text/html\" data-template-name=\"${msg.payload.name}\">\n    <div class=\"form-row\">`;\n    \n//loop of config variables form\nvar properties_text = '';\nfor(i = 0; i< msg.payload.properties.length; i++){\n    properties_text = msg.payload.properties[i].charAt(0).toUpperCase() + msg.payload.properties[i].slice(1)\n    newPayload += `        <label for=\"node-input-${msg.payload.properties[i]}\">${properties_text}</label><input type=\"text\" id=\"node-input-${msg.payload.properties[i]}\">\n    `\n}\nnewPayload += `    </div>\n</script>\n\n<script type=\"text/html\" data-help-name=\"${msg.payload.name}\">\n    <p>${msg.payload.desc}</p>\n</script>`;\nmsg.payload = {};\nmsg.payload = newPayload;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 600,
+        "y": 500,
+        "wires": [
+            [
+                "3aef9959.f9bf56"
+            ]
+        ]
+    },
+    {
+        "id": "11fd94e6.4db7bb",
+        "type": "function",
+        "z": "4b488676.c28178",
+        "name": "json file",
+        "func": "var newPayload = \n`{\n  \"name\": \"lexer-nodered-${msg.payload.name}\",\n  \"version\": \"1.0.0\",\n  \"description\": \"\",\n  \"main\": \"${msg.payload.name}.js\",\n  \"scripts\": {\n    \"test\": \"echo \\\"Error: no test specified\\\" && exit 1\"\n  },\n  \"author\": \"\",\n  \"license\": \"ISC\",\n  \"node-red\" : {\n    \"nodes\": {\n        \"${msg.payload.name}\": \"${msg.payload.name}.js\"\n    }\n}\n}`;\nmsg.payload = {};\nmsg.payload = newPayload;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 600,
+        "y": 580,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ad410bd0.f1ea38",
+        "type": "debug",
+        "z": "4b488676.c28178",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 850,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "3aef9959.f9bf56",
+        "type": "debug",
+        "z": "4b488676.c28178",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 850,
+        "y": 500,
+        "wires": []
+    }
+]
