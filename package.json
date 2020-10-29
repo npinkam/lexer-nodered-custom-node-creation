@@ -2,7 +2,9 @@
     "name": "lexer-nodered-custom-node-creation",
     "description": "A Node-RED Project",
     "version": "0.0.1",
-    "dependencies": {},
+    "dependencies": {
+        "lexer-nodered-node-generator": "1.0.0"
+    },
     "node-red": {
         "settings": {
             "flowFile": "flow.json",
