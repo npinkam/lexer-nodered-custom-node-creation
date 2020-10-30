@@ -10,23 +10,25 @@
         "id": "45199293.60ea6c",
         "type": "file",
         "z": "4b488676.c28178",
-        "name": "Create js",
+        "name": "Create Files",
         "filename": "",
         "appendNewline": true,
         "createDir": true,
         "overwriteFile": "true",
         "encoding": "utf8",
-        "x": 760,
-        "y": 420,
+        "x": 810,
+        "y": 580,
         "wires": [
-            []
+            [
+                "1e4e4383.41c36c"
+            ]
         ]
     },
     {
         "id": "c7e674f8.e916d8",
         "type": "inject",
         "z": "4b488676.c28178",
-        "name": "Node Description",
+        "name": "Generate Signal",
         "props": [
             {
                 "p": "payload"
@@ -37,9 +39,9 @@
         "once": false,
         "onceDelay": 0.1,
         "topic": "",
-        "payload": "xx",
-        "payloadType": "str",
-        "x": 180,
+        "payload": "true",
+        "payloadType": "bool",
+        "x": 160,
         "y": 420,
         "wires": [
             [
@@ -51,16 +53,18 @@
         "id": "a69b01ec.9bf0d",
         "type": "node-generator",
         "z": "4b488676.c28178",
-        "name": "node-name",
-        "desc": "node-description",
-        "properties": "one,two,three,four,five",
-        "codeBeforeReceivePayload": "var b = 5;",
-        "codeWhenReceivePayload": "msg.payload = b+this.name;",
+        "name": "lower-case",
+        "desc": "lower-case",
+        "properties": "",
+        "codeBeforeReceivePayload": "",
+        "codeWhenReceivePayload": "msg.payload = msg.payload.toLowerCase();",
         "x": 390,
         "y": 420,
         "wires": [
             [
-                "98cec8db.866368"
+                "98cec8db.866368",
+                "5e4a20c6.6d6eb",
+                "11fd94e6.4db7bb"
             ]
         ]
     },
@@ -69,7 +73,7 @@
         "type": "function",
         "z": "4b488676.c28178",
         "name": "js file",
-        "func": "var functionName = msg.payload.name.replace(/(-.)/g,function(x){return x[1].toUpperCase()});\nvar newPayload = \n`module.exports = function(RED) {\n    function ${functionName}Node(config) {\n        RED.nodes.createNode(this,config);\n        var node = this;\n\n        //properties field\n        `;\n//add config\nfor(i = 0; i< msg.payload.properties.length; i++){\n    newPayload += `        this.${msg.payload.properties[i]} = config.${msg.payload.properties[i]};\n    `;\n}\n//add codeBeforeReceivePayload\nnewPayload += `\n// add codeBeforeReceivePayload\n${msg.payload.codeWhenReceivePayload}\n`;\n\nnewPayload += `        node.on('input', function(msg) {`\n\n// add codeWhenReceivePayload\nnewPayload += `\n// add codeWhenReceivePayload\n${msg.payload.codeWhenReceivePayload}\n`;\nnewPayload += `            node.send(msg);\n        });\n    }\n    RED.nodes.registerType(\"${msg.payload.name}\",${functionName}Node);\n}`;\nmsg.payload = {};\nmsg.payload = newPayload;\nreturn msg;",
+        "func": "var functionName = msg.payload.name.replace(/(-.)/g,function(x){return x[1].toUpperCase()});\nvar newPayload = \n`module.exports = function(RED) {\n    function ${functionName}Node(config) {\n        RED.nodes.createNode(this,config);\n        var node = this;\n\n        //properties field\n        `;\n//add config\nfor(var i = 0; i< msg.payload.properties.length; i++){\n    newPayload += `        this.${msg.payload.properties[i]} = config.${msg.payload.properties[i]};\n    `;\n}\n//add codeBeforeReceivePayload\nnewPayload += `\n// add codeBeforeReceivePayload\n${msg.payload.codeBeforeReceivePayload}\n`;\n\nnewPayload += `        node.on('input', function(msg) {`\n\n// add codeWhenReceivePayload\nnewPayload += `\n\n// add codeWhenReceivePayload\n${msg.payload.codeWhenReceivePayload}\n`;\nnewPayload += `\nnode.send(msg);\n        });\n    }\n    RED.nodes.registerType(\"${msg.payload.name}\",${functionName}Node);\n}`;\n\nmsg.filename = msg.filename + msg.payload.name + '.js';\n\nmsg.payload = {};\nmsg.payload = newPayload;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -78,7 +82,7 @@
         "y": 420,
         "wires": [
             [
-                "ba8ad90a.d47d68"
+                "e4cdad7a.3e15"
             ]
         ]
     },
@@ -87,7 +91,7 @@
         "type": "function",
         "z": "4b488676.c28178",
         "name": "html file",
-        "func": "var newPayload = \n`<script type=\"text/javascript\">\n    RED.nodes.registerType('${msg.payload.name}',{\n        category: 'function',\n        color: '#a6bbcf',\n        defaults: {`;\n        \n//loop of config variables\nfor(var i = 0; i< msg.payload.properties.length; i++){\nnewPayload +=       \n`            ${msg.payload.properties[i]}: {value:\"\"},\n`;\n}\nnewPayload = newPayload.slice(0, -2);\nnewPayload +=\n`\n},\n        inputs:1,\n        outputs:1,\n        icon: \"file.png\",\n        label: function() {\n            return \"${msg.payload.name}\";\n        }\n    });\n</script>\n\n<script type=\"text/html\" data-template-name=\"${msg.payload.name}\">\n    <div class=\"form-row\">`;\n    \n//loop of config variables form\nvar properties_text = '';\nfor(i = 0; i< msg.payload.properties.length; i++){\n    properties_text = msg.payload.properties[i].charAt(0).toUpperCase() + msg.payload.properties[i].slice(1)\n    newPayload += `        <label for=\"node-input-${msg.payload.properties[i]}\">${properties_text}</label><input type=\"text\" id=\"node-input-${msg.payload.properties[i]}\"></br>\n    `\n}\nnewPayload += `    </div>\n</script>\n\n<script type=\"text/html\" data-help-name=\"${msg.payload.name}\">\n    <p>${msg.payload.desc}</p>\n</script>`;\nmsg.payload = {};\nmsg.payload = newPayload;\nreturn msg;",
+        "func": "var newPayload = \n`<script type=\"text/javascript\">\n    RED.nodes.registerType('${msg.payload.name}',{\n        category: 'lexer-function',\n        color: '#a6bbcf',\n        defaults: {`;\n        \n//loop of config variables\nfor(var i = 0; i< msg.payload.properties.length; i++){\nnewPayload +=       \n`            ${msg.payload.properties[i]}: {value:\"\"},\n`;\n}\nif(msg.payload.properties.length > 0)\n    newPayload = newPayload.slice(0, -2);\nnewPayload +=\n`\n},\n        inputs:1,\n        outputs:1,\n        icon: \"file.png\",\n        label: function() {\n            return \"${msg.payload.name}\";\n        }\n    });\n</script>\n\n<script type=\"text/html\" data-template-name=\"${msg.payload.name}\">\n    <div class=\"form-row\">`;\n    \n//loop of config variables form\nvar properties_text = '';\nfor(i = 0; i< msg.payload.properties.length; i++){\n    properties_text = msg.payload.properties[i].charAt(0).toUpperCase() + msg.payload.properties[i].slice(1)\n    newPayload += `        <label for=\"node-input-${msg.payload.properties[i]}\">${properties_text}</label><input type=\"text\" id=\"node-input-${msg.payload.properties[i]}\"></br>\n    `\n}\nnewPayload += `    </div>\n</script>\n\n<script type=\"text/html\" data-help-name=\"${msg.payload.name}\">\n    <p>${msg.payload.desc}</p>\n</script>`;\n\nmsg.filename = msg.filename + msg.payload.name + '.html';\n\nmsg.payload = {};\nmsg.payload = newPayload;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -95,7 +99,9 @@
         "x": 600,
         "y": 500,
         "wires": [
-            []
+            [
+                "adeeb0a.d65285"
+            ]
         ]
     },
     {
@@ -103,7 +109,7 @@
         "type": "function",
         "z": "4b488676.c28178",
         "name": "json file",
-        "func": "var newPayload = \n`module.exports = function(RED) {\n    function nodeGeneratorNode(config) {\n        RED.nodes.createNode(this,config);\n        var node = this;\n\n        //properties field\n        this.name = config.name;\n        this.desc = config.desc;\n        this.properties = config.properties;\n        this.codeBeforeReceivePayload = config.codeBeforeReceivePayload;\n        this.codeWhenReceivePayload = config.codeWhenReceivePayload;\n\n        node.on('input', function(msg) {\n            msg.payload = {};\n            msg.payload.name = this.name;\n            msg.filename = this.name;\n            msg.payload.desc = this.desc;\n            msg.payload.properties = this.properties.split(',');\n            msg.payload.codeBeforeReceivePayload = this.codeBeforeReceivePayload;\n            msg.payload.codeWhenReceivePayload = this.codeWhenReceivePayload;\n            node.send(msg);\n        });\n    }\n    RED.nodes.registerType(\"node-generator\",nodeGeneratorNode);\n}`;\nmsg.payload = {};\nmsg.payload = newPayload;\nreturn msg;",
+        "func": "var newPayload = \n`{\n  \"name\": \"lexer-nodered-${msg.payload.name}\",\n  \"version\": \"1.0.0\",\n  \"description\": \"\",\n  \"main\": \"${msg.payload.name}.js\",\n  \"scripts\": {\n    \"test\": \"echo \\\\\"Error: no test specified\\\\\" && exit 1\"\n  },\n  \"author\": \"\",\n  \"license\": \"ISC\",\n  \"node-red\" : {\n    \"nodes\": {\n        \"${msg.payload.name}\": \"${msg.payload.name}.js\"\n    }\n}\n}`;\n\nmsg.filename = msg.filename + 'package.json';\n\nmsg.payload = {};\nmsg.payload = newPayload;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -111,23 +117,78 @@
         "x": 600,
         "y": 580,
         "wires": [
+            [
+                "45199293.60ea6c"
+            ]
+        ]
+    },
+    {
+        "id": "adeeb0a.d65285",
+        "type": "file",
+        "z": "4b488676.c28178",
+        "name": "Create Files",
+        "filename": "",
+        "appendNewline": true,
+        "createDir": true,
+        "overwriteFile": "true",
+        "encoding": "utf8",
+        "x": 810,
+        "y": 500,
+        "wires": [
             []
         ]
     },
     {
-        "id": "ba8ad90a.d47d68",
-        "type": "debug",
+        "id": "e4cdad7a.3e15",
+        "type": "file",
         "z": "4b488676.c28178",
+        "name": "Create Files",
+        "filename": "",
+        "appendNewline": true,
+        "createDir": true,
+        "overwriteFile": "true",
+        "encoding": "utf8",
+        "x": 810,
+        "y": 420,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3b372f1c.9409e",
+        "type": "exec",
+        "z": "4b488676.c28178",
+        "command": "",
+        "addpay": true,
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "oldrc": false,
         "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 820,
-        "y": 480,
-        "wires": []
+        "x": 1290,
+        "y": 580,
+        "wires": [
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "1e4e4383.41c36c",
+        "type": "function",
+        "z": "4b488676.c28178",
+        "name": "add created node to nodered",
+        "func": "var fileloc = msg.filename.split('/', 4);\nfileloc = fileloc.join('/');\nmsg.payload = `cd /data/\nnpm install ${fileloc}`;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 1080,
+        "y": 580,
+        "wires": [
+            [
+                "3b372f1c.9409e"
+            ]
+        ]
     }
 ]
