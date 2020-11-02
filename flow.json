@@ -55,10 +55,10 @@
         "z": "4b488676.c28178",
         "name": "gdfindi-webapi-login",
         "desc": "gdfindi-webapi-login",
-        "dependencies": "{\"Oauth\": \"client-oauth2\"}",
+        "dependencies": "",
         "properties": "username, password",
         "codeBeforeReceivePayload": "",
-        "codeWhenReceivePayload": "msg.payload = 'test';",
+        "codeWhenReceivePayload": "msg.oauth2Request = {\n \"access_token_url\": \"https://precom.gdfindi.pro/api/token\",\n \"credentials\": {\n \"grant_type\": \"password\",\n \"username\": this.username,\n \"password\": this.password\n }\n};\nreturn msg;",
         "x": 390,
         "y": 420,
         "wires": [
@@ -92,7 +92,7 @@
         "type": "function",
         "z": "4b488676.c28178",
         "name": "html file",
-        "func": "var newPayload = \n`<script type=\"text/javascript\">\n    RED.nodes.registerType('${msg.payload.name}',{\n        category: 'lexer-function',\n        color: '#a6bbcf',\n        defaults: {`;\n        \n//loop of config variables\nfor(var i = 0; i< msg.payload.properties.length; i++){\nnewPayload +=       \n`            ${msg.payload.properties[i]}: {value:\"\"},\n`;\n}\nif(msg.payload.properties.length > 0)\n    newPayload = newPayload.slice(0, -2);\nnewPayload +=\n`\n},\n        inputs:1,\n        outputs:1,\n        icon: \"file.png\",\n        label: function() {\n            return \"${msg.payload.name}\";\n        }\n    });\n</script>\n\n<script type=\"text/html\" data-template-name=\"${msg.payload.name}\">\n    <div class=\"form-row\">`;\n    \n//loop of config variables form\nvar properties_text = '';\nfor(i = 0; i< msg.payload.properties.length; i++){\n    properties_text = msg.payload.properties[i].charAt(0).toUpperCase() + msg.payload.properties[i].slice(1)\n    newPayload += `        <label for=\"node-input-${msg.payload.properties[i]}\">${properties_text}</label><input type=\"text\" id=\"node-input-${msg.payload.properties[i]}\"></br>\n    `\n}\nnewPayload += `    </div>\n</script>\n\n<script type=\"text/html\" data-help-name=\"${msg.payload.name}\">\n    <p>${msg.payload.desc}</p>\n</script>`;\n\nmsg.filename = msg.filename + msg.payload.name + '.html';\n\nmsg.payload = {};\nmsg.payload = newPayload;\nreturn msg;",
+        "func": "var newPayload = \n`<script type=\"text/javascript\">\n    RED.nodes.registerType('${msg.payload.name}',{\n        category: 'lexer-function',\n        color: '#a6bbcf',\n        defaults: {`;\n        \n//loop of config variables\nfor(var i = 0; i< msg.payload.properties.length; i++){\nnewPayload +=       \n`            ${msg.payload.properties[i].replace(/\\s/g, '')}: {value:\"\"},\n`;\n}\nif(msg.payload.properties.length > 0)\n    newPayload = newPayload.slice(0, -2);\nnewPayload +=\n`\n},\n        inputs:1,\n        outputs:1,\n        icon: \"file.png\",\n        label: function() {\n            return \"${msg.payload.name}\";\n        }\n    });\n</script>\n\n<script type=\"text/html\" data-template-name=\"${msg.payload.name}\">\n    <div class=\"form-row\">`;\n    \n//loop of config variables form\nvar properties_text = '';\nfor(i = 0; i< msg.payload.properties.length; i++){\n    properties_text = msg.payload.properties[i].replace(/\\s/g, '').charAt(0).toUpperCase() + msg.payload.properties[i].replace(/\\s/g, '').slice(1)\n    newPayload += `        <label for=\"node-input-${msg.payload.properties[i].replace(/\\s/g, '')}\">${properties_text}</label><input type=\"text\" id=\"node-input-${msg.payload.properties[i].replace(/\\s/g, '')}\"></br>\n    `\n}\nnewPayload += `    </div>\n</script>\n\n<script type=\"text/html\" data-help-name=\"${msg.payload.name}\">\n    <p>${msg.payload.desc}</p>\n</script>`;\n\nmsg.filename = msg.filename + msg.payload.name + '.html';\n\nmsg.payload = {};\nmsg.payload = newPayload;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -110,7 +110,7 @@
         "type": "function",
         "z": "4b488676.c28178",
         "name": "json file",
-        "func": "var newPayload = \n`{\n  \"name\": \"lexer-nodered-${msg.payload.name}\",\n  \"version\": \"1.0.0\",\n  \"description\": \"\",\n  \"main\": \"${msg.payload.name}.js\",\n  \"scripts\": {\n    \"test\": \"echo \\\\\"Error: no test specified\\\\\" && exit 1\"\n  },\n  \"author\": \"\",\n  \"license\": \"ISC\",\n  \"dependencies\": {\n  `\n//add dependency\nfor (const key in msg.payload.require) {\n    newPayload += `        \"${msg.payload.require[key]}\": \"*\"\n    `;\n}\n  \nnewPayload +=   `},\n\"node-red\" : {\n    \"nodes\": {\n        \"${msg.payload.name}\": \"${msg.payload.name}.js\"\n    }\n}\n}`;\n\nmsg.filename = msg.filename + 'package.json';\nmsg.dependencies = msg.payload.dependencies;\nmsg.payload = {};\nmsg.payload = newPayload;\nreturn msg;",
+        "func": "var newPayload = \n`{\n  \"name\": \"lexer-nodered-${msg.payload.name}\",\n  \"version\": \"1.0.0\",\n  \"description\": \"\",\n  \"main\": \"${msg.payload.name}.js\",\n  \"scripts\": {\n    \"test\": \"echo \\\\\"Error: no test specified\\\\\" && exit 1\"\n  },\n  \"author\": \"\",\n  \"license\": \"ISC\",\n  \"dependencies\": {\n  `\n//add dependencies\nfor (const key in msg.payload.dependencies) {\n    newPayload += `        \"${msg.payload.dependencies[key]}\": \"*\"\n    `;\n}\n  \nnewPayload +=   `},\n\"node-red\" : {\n    \"nodes\": {\n        \"${msg.payload.name}\": \"${msg.payload.name}.js\"\n    }\n}\n}`;\n\nmsg.filename = msg.filename + 'package.json';\nmsg.dependencies = msg.payload.dependencies;\nmsg.payload = {};\nmsg.payload = newPayload;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -185,7 +185,7 @@
         "type": "function",
         "z": "4b488676.c28178",
         "name": "add created node to nodered",
-        "func": "var fileloc = msg.filename.split('/', 4);\nfileloc = fileloc.join('/');\nmsg.payload = '';\nfor (const key in msg.dependencies) {\n    msg.payload += `npm install ${msg.dependencies[key]}\n`;\n}\nmsg.payload += `cd /data/\nnpm install ${fileloc}`;\nreturn msg;",
+        "func": "var fileloc = msg.filename.split('/', 4);\nfileloc = fileloc.join('/');\nmsg.payload = `cd ~/\n`;\nfor (const key in msg.dependencies) {\n    msg.payload += `npm install --prefix ~/ ${msg.dependencies[key]}\n`;\n}\nmsg.payload += `cd /data/\nnpm install ${fileloc}`;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -194,7 +194,8 @@
         "y": 580,
         "wires": [
             [
-                "3b372f1c.9409e"
+                "3b372f1c.9409e",
+                "cdf943f5.aa5a7"
             ]
         ]
     },
@@ -212,6 +213,22 @@
         "statusType": "auto",
         "x": 1320,
         "y": 360,
+        "wires": []
+    },
+    {
+        "id": "cdf943f5.aa5a7",
+        "type": "debug",
+        "z": "4b488676.c28178",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1220,
+        "y": 720,
         "wires": []
     }
 ]
