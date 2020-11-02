@@ -53,11 +53,12 @@
         "id": "a69b01ec.9bf0d",
         "type": "node-generator",
         "z": "4b488676.c28178",
-        "name": "lower-case",
-        "desc": "lower-case",
-        "properties": "",
+        "name": "gdfindi-webapi-login",
+        "desc": "gdfindi-webapi-login",
+        "require": "{\"Oauth2\": \"client-oauth2\"}",
+        "properties": "username, password",
         "codeBeforeReceivePayload": "",
-        "codeWhenReceivePayload": "msg.payload = msg.payload.toLowerCase();",
+        "codeWhenReceivePayload": "msg.payload = 'test';",
         "x": 390,
         "y": 420,
         "wires": [
@@ -73,7 +74,7 @@
         "type": "function",
         "z": "4b488676.c28178",
         "name": "js file",
-        "func": "var functionName = msg.payload.name.replace(/(-.)/g,function(x){return x[1].toUpperCase()});\nvar newPayload = \n`module.exports = function(RED) {\n    function ${functionName}Node(config) {\n        RED.nodes.createNode(this,config);\n        var node = this;\n\n        //properties field\n        `;\n//add config\nfor(var i = 0; i< msg.payload.properties.length; i++){\n    newPayload += `        this.${msg.payload.properties[i]} = config.${msg.payload.properties[i]};\n    `;\n}\n//add codeBeforeReceivePayload\nnewPayload += `\n// add codeBeforeReceivePayload\n${msg.payload.codeBeforeReceivePayload}\n`;\n\nnewPayload += `        node.on('input', function(msg) {`\n\n// add codeWhenReceivePayload\nnewPayload += `\n\n// add codeWhenReceivePayload\n${msg.payload.codeWhenReceivePayload}\n`;\nnewPayload += `\nnode.send(msg);\n        });\n    }\n    RED.nodes.registerType(\"${msg.payload.name}\",${functionName}Node);\n}`;\n\nmsg.filename = msg.filename + msg.payload.name + '.js';\n\nmsg.payload = {};\nmsg.payload = newPayload;\nreturn msg;",
+        "func": "var functionName = msg.payload.name.replace(/(-.)/g,function(x){return x[1].toUpperCase()});\nvar newPayload = '';\n\n//add require\nfor (const key in msg.payload.require) {\n    newPayload += `        var ${key} = require('${msg.payload.require[key]}');\n    `;\n}\n\nnewPayload += `module.exports = function(RED) {\n    function ${functionName}Node(config) {\n        RED.nodes.createNode(this,config);\n        var node = this;\n\n        //properties field\n        `;\n//add config\nfor(i = 0; i< msg.payload.properties.length; i++){\n    newPayload += `        this.${msg.payload.properties[i].replace(/\\s/g, '')} = config.${msg.payload.properties[i].replace(/\\s/g, '')};\n    `;\n}\n//add codeBeforeReceivePayload\nnewPayload += `\n// add codeBeforeReceivePayload\n${msg.payload.codeBeforeReceivePayload}\n`;\n\nnewPayload += `        node.on('input', function(msg) {`\n\n// add codeWhenReceivePayload\nnewPayload += `\n\n// add codeWhenReceivePayload\n${msg.payload.codeWhenReceivePayload}\n`;\nnewPayload += `\nnode.send(msg);\n        });\n    }\n    RED.nodes.registerType(\"${msg.payload.name}\",${functionName}Node);\n}`;\n\nmsg.filename = msg.filename + msg.payload.name + '.js';\n\nmsg.payload = {};\nmsg.payload = newPayload;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -109,7 +110,7 @@
         "type": "function",
         "z": "4b488676.c28178",
         "name": "json file",
-        "func": "var newPayload = \n`{\n  \"name\": \"lexer-nodered-${msg.payload.name}\",\n  \"version\": \"1.0.0\",\n  \"description\": \"\",\n  \"main\": \"${msg.payload.name}.js\",\n  \"scripts\": {\n    \"test\": \"echo \\\\\"Error: no test specified\\\\\" && exit 1\"\n  },\n  \"author\": \"\",\n  \"license\": \"ISC\",\n  \"node-red\" : {\n    \"nodes\": {\n        \"${msg.payload.name}\": \"${msg.payload.name}.js\"\n    }\n}\n}`;\n\nmsg.filename = msg.filename + 'package.json';\n\nmsg.payload = {};\nmsg.payload = newPayload;\nreturn msg;",
+        "func": "var newPayload = \n`{\n  \"name\": \"lexer-nodered-${msg.payload.name}\",\n  \"version\": \"1.0.0\",\n  \"description\": \"\",\n  \"main\": \"${msg.payload.name}.js\",\n  \"scripts\": {\n    \"test\": \"echo \\\\\"Error: no test specified\\\\\" && exit 1\"\n  },\n  \"author\": \"\",\n  \"license\": \"ISC\",\n  \"dependencies\": {\n  `\n//add dependency\nfor (const key in msg.payload.require) {\n    newPayload += `        \"${msg.payload.require[key]}\": \"*\"\n    `;\n}\n  \nnewPayload +=   `},\n\"node-red\" : {\n    \"nodes\": {\n        \"${msg.payload.name}\": \"${msg.payload.name}.js\"\n    }\n}\n}`;\n\nmsg.filename = msg.filename + 'package.json';\nmsg.dependency = msg.payload.require;\nmsg.payload = {};\nmsg.payload = newPayload;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -168,9 +169,15 @@
         "x": 1290,
         "y": 580,
         "wires": [
-            [],
-            [],
-            []
+            [
+                "8475ab51.b4afc8"
+            ],
+            [
+                "8475ab51.b4afc8"
+            ],
+            [
+                "8475ab51.b4afc8"
+            ]
         ]
     },
     {
@@ -178,7 +185,7 @@
         "type": "function",
         "z": "4b488676.c28178",
         "name": "add created node to nodered",
-        "func": "var fileloc = msg.filename.split('/', 4);\nfileloc = fileloc.join('/');\nmsg.payload = `cd /data/\nnpm install ${fileloc}`;\nreturn msg;",
+        "func": "var fileloc = msg.filename.split('/', 4);\nfileloc = fileloc.join('/');\nmsg.payload = '';\nfor (const key in msg.dependency) {\n    msg.payload += `npm install ${msg.dependency[key]}\n`;\n}\nmsg.payload += `cd /data/\nnpm install ${fileloc}`;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -190,5 +197,21 @@
                 "3b372f1c.9409e"
             ]
         ]
+    },
+    {
+        "id": "8475ab51.b4afc8",
+        "type": "debug",
+        "z": "4b488676.c28178",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1320,
+        "y": 360,
+        "wires": []
     }
 ]
