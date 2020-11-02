@@ -53,19 +53,18 @@
         "id": "a69b01ec.9bf0d",
         "type": "node-generator",
         "z": "4b488676.c28178",
-        "name": "gdfindi-webapi-login",
-        "desc": "gdfindi-webapi-login",
+        "name": "gdfindi-webapi-project-list",
+        "desc": "gdfindi-webapi-project-list",
         "dependencies": "",
-        "properties": "username, password",
-        "codeBeforeReceivePayload": "",
-        "codeWhenReceivePayload": "msg.oauth2Request = {\n \"access_token_url\": \"https://precom.gdfindi.pro/api/token\",\n \"credentials\": {\n \"grant_type\": \"password\",\n \"username\": this.username,\n \"password\": this.password\n }\n};\nreturn msg;",
+        "properties": "",
+        "codeBeforeReceivePayload": "var authorization = msg.payload;",
+        "codeWhenReceivePayload": "",
         "x": 390,
         "y": 420,
         "wires": [
             [
                 "98cec8db.866368",
-                "5e4a20c6.6d6eb",
-                "11fd94e6.4db7bb"
+                "5e4a20c6.6d6eb"
             ]
         ]
     },
@@ -194,8 +193,7 @@
         "y": 580,
         "wires": [
             [
-                "3b372f1c.9409e",
-                "cdf943f5.aa5a7"
+                "3b372f1c.9409e"
             ]
         ]
     },
