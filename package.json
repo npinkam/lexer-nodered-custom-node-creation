@@ -3,7 +3,7 @@
     "description": "A Node-RED Project",
     "version": "0.0.1",
     "dependencies": {
-        "lexer-nodered-node-generator": "1.0.0"
+        "lexer-nodered-node-generator": "npinkam/lexer-nodered-node-generator"
     },
     "node-red": {
         "settings": {
